@@ -28,7 +28,7 @@ export default function GamePage({ params }) {
     isInitialized.current = true;
     
     // Fetch game data
-    fetch(`http://localhost:5000/api/game/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/game/${id}`, {
       credentials: 'include'
     })
       .then(res => res.json())
@@ -223,7 +223,7 @@ export default function GamePage({ params }) {
 
   async function makeMove() {
     setError('');
-    const res = await fetch(`http://localhost:5000/api/game/move/${id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/game/move/${id}`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -243,7 +243,7 @@ export default function GamePage({ params }) {
     console.log('🚀 Submitting move immediately:', moveString);
     setError('');
     try {
-      const res = await fetch(`http://localhost:5000/api/game/move/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/game/move/${id}`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -267,7 +267,7 @@ export default function GamePage({ params }) {
   async function endGameByTimeout(loserColor, winnerName) {
     console.log('⏰ Ending game due to timeout:', { loserColor, winnerName });
     try {
-      const res = await fetch(`http://localhost:5000/api/game/timeout/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/game/timeout/${id}`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

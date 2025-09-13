@@ -15,7 +15,7 @@ export default function Dashboard() {
 		else setLoading(true);
 
 		try {
-			const res = await fetch('http://localhost:5000/api/game', {
+			const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/game`, {
 				credentials: 'include'
 			});
 			const games = await res.json();
@@ -39,7 +39,7 @@ export default function Dashboard() {
 
 	async function createGame() {
 		setError('');
-		const res = await fetch('http://localhost:5000/api/game/create', {
+		const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/game/create`, {
 			method: 'POST',
 			credentials: 'include',
 			headers: { 'Content-Type': 'application/json' }
@@ -61,7 +61,7 @@ export default function Dashboard() {
 
 	async function joinGame(gameId) {
 		setError('');
-		const res = await fetch(`http://localhost:5000/api/game/join/${gameId}`, {
+		const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/game/join/${gameId}`, {
 			method: 'POST',
 			credentials: 'include',
 			headers: { 'Content-Type': 'application/json' }
