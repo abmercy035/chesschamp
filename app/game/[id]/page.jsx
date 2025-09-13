@@ -71,7 +71,7 @@ export default function GamePage({ params }) {
         // Subscribe to game start events (when second player joins)
         channelRef.current.subscribe('gameStart', msg => {
           console.log('🎉 Received game start via Ably:', msg.data);
-          setGame(msg.data.game);
+          setGame({...msg.data.game, ...game.status, ...game.playerColor});
           if (msg.data.game.timeLeft) {
             setTimeLeft(msg.data.game.timeLeft);
           }
