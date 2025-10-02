@@ -135,14 +135,20 @@ export default function Dashboard() {
 						</div>
 						<p className="text-gray-300 text-lg">Choose your next conquest</p>
 					</div>
-					<div className="flex justify-center lg:justify-end">
+					<div className="flex justify-center lg:justify-end gap-2 mb-4">
 						{/* Create Game Button */}
 						<button
 							onClick={createGame}
-							className="cursor-pointer btn-primary text-lg flex items-center space-x-2"
+							className="cursor-pointer btn-primary text-sm flex items-center space-x-2"
 						>
-							<span>⚔️</span>
 							<span>CREATE BATTLE</span>
+						</button>
+						<button
+							onClick={createGame}
+							className="cursor-pointer btn-secondary  text-sm flex items-center space-x-2"
+						>
+							<span className="text-lg">⚔️</span>
+							<span>MATCH-MAKE</span>
 						</button>
 					</div>
 				</div>

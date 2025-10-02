@@ -130,7 +130,7 @@ body {
 	.btn-primary {
 		padding: 1rem 1.5rem;
 		border-radius: 0.75rem;
-		font-weight: 600;
+		font-weight: 800;
 		transition: all 0.3s ease;
 		background: linear-gradient(to right, #facc15, #eab308);
 		color: #1f2937;
@@ -145,11 +145,11 @@ body {
 	.btn-secondary {
 		padding: 1rem 1.5rem;
 		border-radius: 0.75rem;
-		font-weight: 600;
+		font-weight: 800;
 		transition: all 0.3s ease;
 		background: var(--glass-bg);
 		backdrop-filter: blur(10px);
-		border: 1px solid rgba(255, 255, 255, 0.2);
+		border: 2px solid rgba(255, 255, 255, 0.438);
 		color: white;
 	}
 

@@ -73,7 +73,7 @@ export default function Navigation({ currentPage = '' }) {
 					{/* Logo */}
 					<button
 						onClick={() => router.push('/dashboard')}
-						className="flex items-center space-x-3 group"
+						className=" flex items-center space-x-3 group"
 					>
 						<div className="text-3xl">♔</div>
 						<div>
@@ -85,51 +85,31 @@ export default function Navigation({ currentPage = '' }) {
 					</button>
 
 					{/* Navigation Links */}
-					<div className="hidden md:flex items-center space-x-6">
+					<div className="hidden md:flex align-center space-x-6 flex-wrap justify-center">
 						<button
 							onClick={() => router.push('/dashboard')}
 							className={`cursor-pointer px-4 py-2 rounded-xl font-semibold transition-all ${currentPage === 'dashboard'
-								? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+								? ' text-yellow-400 border-yellow-400/30'
 								: 'text-gray-300 hover:text-white hover:bg-white/10'
 								}`}
 						>
 							🏠 Dashboard
 						</button>
-
-						<button
-							onClick={() => router.push('/matchmaking')}
-							className={`cursor-pointer px-4 py-2 rounded-xl font-semibold transition-all ${currentPage === 'matchmaking'
-								? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
-								: 'text-gray-300 hover:text-white hover:bg-white/10'
-								}`}
-						>
-							🎯 Matchmaking
-						</button>
-
 						<button
 							onClick={() => router.push('/leaderboard')}
 							className={`cursor-pointer px-4 py-2 rounded-xl font-semibold transition-all ${currentPage === 'leaderboard'
-								? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+								? ' text-yellow-400 border-yellow-400/30'
 								: 'text-gray-300 hover:text-white hover:bg-white/10'
 								}`}
 						>
 							📊 Leaderboard
 						</button>
 
-						<button
-							onClick={() => router.push('/profile')}
-							className={`cursor-pointer px-4 py-2 rounded-xl font-semibold transition-all ${currentPage === 'profile'
-								? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
-								: 'text-gray-300 hover:text-white hover:bg-white/10'
-								}`}
-						>
-							👤 Profile
-						</button>
 
 						<button
 							onClick={() => router.push('/rules')}
 							className={`cursor-pointer px-4 py-2 rounded-xl font-semibold transition-all ${currentPage === 'rules'
-								? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+								? ' text-yellow-400 border-yellow-400/30'
 								: 'text-gray-300 hover:text-white hover:bg-white/10'
 								}`}
 						>
@@ -139,7 +119,7 @@ export default function Navigation({ currentPage = '' }) {
 						<button
 							onClick={() => router.push('/how-to-play')}
 							className={`cursor-pointer px-4 py-2 rounded-xl font-semibold transition-all ${currentPage === 'how-to-play'
-								? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+								? ' text-yellow-400 border-yellow-400/30'
 								: 'text-gray-300 hover:text-white hover:bg-white/10'
 								}`}
 						>
@@ -149,7 +129,7 @@ export default function Navigation({ currentPage = '' }) {
 							<button
 								onClick={() => router.push('/admin')}
 								className={`cursor-pointer px-4 py-2 rounded-xl font-semibold transition-all ${currentPage === 'admin'
-									? 'bg-red-500/20 text-red-400 border border-red-400/30'
+									? 'bg-red-500/20 text-red-400 border-red-400/30'
 									: 'text-gray-300 hover:text-red-400 hover:bg-red-400/10'
 									}`}
 							>
@@ -165,7 +145,7 @@ export default function Navigation({ currentPage = '' }) {
 						{!loading && profile && (
 							<button
 								onClick={() => router.push('/profile')}
-								className="cursor-pointer hidden sm:flex items-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105"
+								className="cursor-pointer hidden sm:flex items-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-white/20 px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105"
 							>
 								<div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-lg">
 									{profile.avatar || '♔'}
@@ -199,7 +179,7 @@ export default function Navigation({ currentPage = '' }) {
 						</div>
 
 						{/* Logout Button */}
-						<button
+						{/* <button
 							onClick={handleLogout}
 							className="cursor-pointer text-gray-400 hover:text-red-400 transition-colors p-2 rounded-xl hover:bg-red-400/10"
 							title="Logout"
@@ -207,7 +187,7 @@ export default function Navigation({ currentPage = '' }) {
 							<svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
 							</svg>
-						</button>
+						</button> */}
 					</div>
 				</div>
 			</div>
@@ -223,7 +203,7 @@ export default function Navigation({ currentPage = '' }) {
 									router.push('/profile');
 									setMobileMenuOpen(false);
 								}}
-								className="w-full flex items-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 px-4 py-3 rounded-xl transition-all duration-300"
+								className="w-full flex items-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border-white/20 px-4 py-3 rounded-xl transition-all duration-300"
 							>
 								<div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-lg">
 									{profile.avatar || '♔'}
@@ -247,25 +227,14 @@ export default function Navigation({ currentPage = '' }) {
 									setMobileMenuOpen(false);
 								}}
 								className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${currentPage === 'dashboard'
-									? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+									? ' text-yellow-400 border-yellow-400/30'
 									: 'text-gray-300 hover:text-white hover:bg-white/10'
 									}`}
 							>
 								🏠 Dashboard
 							</button>
 
-							<button
-								onClick={() => {
-									router.push('/matchmaking');
-									setMobileMenuOpen(false);
-								}}
-								className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${currentPage === 'matchmaking'
-									? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
-									: 'text-gray-300 hover:text-white hover:bg-white/10'
-									}`}
-							>
-								🎯 Matchmaking
-							</button>
+							
 
 							<button
 								onClick={() => {
@@ -273,7 +242,7 @@ export default function Navigation({ currentPage = '' }) {
 									setMobileMenuOpen(false);
 								}}
 								className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${currentPage === 'leaderboard'
-									? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+									? ' text-yellow-400 border-yellow-400/30'
 									: 'text-gray-300 hover:text-white hover:bg-white/10'
 									}`}
 							>
@@ -286,7 +255,7 @@ export default function Navigation({ currentPage = '' }) {
 									setMobileMenuOpen(false);
 								}}
 								className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${currentPage === 'profile'
-									? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+									? ' text-yellow-400 border-yellow-400/30'
 									: 'text-gray-300 hover:text-white hover:bg-white/10'
 									}`}
 							>
@@ -299,7 +268,7 @@ export default function Navigation({ currentPage = '' }) {
 									setMobileMenuOpen(false);
 								}}
 								className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${currentPage === 'rules'
-									? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+									? ' text-yellow-400 border-yellow-400/30'
 									: 'text-gray-300 hover:text-white hover:bg-white/10'
 									}`}
 							>
@@ -312,7 +281,7 @@ export default function Navigation({ currentPage = '' }) {
 									setMobileMenuOpen(false);
 								}}
 								className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${currentPage === 'how-to-play'
-									? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+									? ' text-yellow-400 border-yellow-400/30'
 									: 'text-gray-300 hover:text-white hover:bg-white/10'
 									}`}
 							>
@@ -327,7 +296,7 @@ export default function Navigation({ currentPage = '' }) {
 										setMobileMenuOpen(false);
 									}}
 									className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${currentPage === 'admin'
-										? 'bg-red-500/20 text-red-400 border border-red-400/30'
+										? 'bg-red-500/20 text-red-400 border-red-400/30'
 										: 'text-gray-300 hover:text-red-400 hover:bg-red-400/10'
 										}`}
 								>
