@@ -250,6 +250,18 @@ const Page = () => {
 				</div>
 				<div className="flex items-center space-x-4">
 					<Link
+						href="/rules"
+						className="text-gray-300 hover:text-yellow-400 transition-colors duration-300 font-medium hidden sm:block"
+					>
+						Rules
+					</Link>
+					<Link
+						href="/how-to-play"
+						className="text-gray-300 hover:text-yellow-400 transition-colors duration-300 font-medium hidden sm:block"
+					>
+						How to Play
+					</Link>
+					<Link
 						href="/login"
 						className="text-gray-300 hover:text-yellow-400 transition-colors duration-300 font-medium"
 					>
@@ -300,14 +312,34 @@ const Page = () => {
 					</div>
 
 					{/* CTA Buttons */}
-					<div className="flex justify-center max-w-lg mx-auto">
-						<button
-							onClick={() => setShowSignup(true)}
-							className="w-full sm:w-auto bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black px-12 py-4 rounded-2xl font-black text-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/25 transform active:scale-95 flex items-center justify-center space-x-3"
-						>
-							<span>⚡</span>
-							<span>START PLAYING</span>
-						</button>
+					<div className="space-y-6">
+						<div className="flex justify-center max-w-lg mx-auto">
+							<button
+								onClick={() => setShowSignup(true)}
+								className="w-full sm:w-auto bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black px-12 py-4 rounded-2xl font-black text-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/25 transform active:scale-95 flex items-center justify-center space-x-3"
+							>
+								<span>⚡</span>
+								<span>START PLAYING</span>
+							</button>
+						</div>
+
+						{/* Secondary Buttons */}
+						<div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 max-w-lg mx-auto">
+							<Link
+								href="/rules"
+								className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 backdrop-blur-sm border border-white/20 hover:border-white/40 flex items-center justify-center space-x-2"
+							>
+								<span>♟️</span>
+								<span>Learn Rules</span>
+							</Link>
+							<Link
+								href="/how-to-play"
+								className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 backdrop-blur-sm border border-white/20 hover:border-white/40 flex items-center justify-center space-x-2"
+							>
+								<span>📚</span>
+								<span>How to Play</span>
+							</Link>
+						</div>
 					</div>
 
 					{/* Stats */}

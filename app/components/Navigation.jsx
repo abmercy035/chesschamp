@@ -126,7 +126,25 @@ export default function Navigation({ currentPage = '' }) {
 							👤 Profile
 						</button>
 
-						{/* Admin Button - Only show for admin users */}
+						<button
+							onClick={() => router.push('/rules')}
+							className={`cursor-pointer px-4 py-2 rounded-xl font-semibold transition-all ${currentPage === 'rules'
+								? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+								: 'text-gray-300 hover:text-white hover:bg-white/10'
+								}`}
+						>
+							♟️ Rules
+						</button>
+
+						<button
+							onClick={() => router.push('/how-to-play')}
+							className={`cursor-pointer px-4 py-2 rounded-xl font-semibold transition-all ${currentPage === 'how-to-play'
+								? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+								: 'text-gray-300 hover:text-white hover:bg-white/10'
+								}`}
+						>
+							📚 How to Play
+						</button>						{/* Admin Button - Only show for admin users */}
 						{profile?.username === 'admin' && (
 							<button
 								onClick={() => router.push('/admin')}
@@ -273,6 +291,32 @@ export default function Navigation({ currentPage = '' }) {
 									}`}
 							>
 								👤 Profile
+							</button>
+
+							<button
+								onClick={() => {
+									router.push('/rules');
+									setMobileMenuOpen(false);
+								}}
+								className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${currentPage === 'rules'
+									? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+									: 'text-gray-300 hover:text-white hover:bg-white/10'
+									}`}
+							>
+								♟️ Rules
+							</button>
+
+							<button
+								onClick={() => {
+									router.push('/how-to-play');
+									setMobileMenuOpen(false);
+								}}
+								className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${currentPage === 'how-to-play'
+									? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/30'
+									: 'text-gray-300 hover:text-white hover:bg-white/10'
+									}`}
+							>
+								📚 How to Play
 							</button>
 
 							{/* Admin Button - Only show for admin users */}

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import Image from 'next/image';
 import profileService from '../../utils/profileService';
 
 export default function Login() {
@@ -28,14 +29,22 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-responsive relative overflow-hidden font-sans">
-      {/* Animated background elements with a darker, more subtle theme */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-[#d4af37]/10 rounded-full blur-3xl opacity-50 floating-animation" style={{ animationDuration: '6s' }}></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#d4af37]/10 rounded-full blur-3xl opacity-50 floating-animation" style={{ animationDelay: '1.5s', animationDuration: '8s' }}></div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Chess Background - Same as landing page */}
+      <div className="absolute inset-0">
+        <Image
+          src="/chess_bg.webp"
+          alt="Chess Background"
+          fill
+          style={{ objectFit: 'cover' }}
+          className="opacity-30"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70"></div>
       </div>
 
-      <div className="w-full max-w-xl relative z-10 space-y-8">
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-xl space-y-8">
         {/* Logo Section */}
         <div className="text-center space-y-4">
           <div className="space-y-2">
@@ -136,6 +145,7 @@ export default function Login() {
               <span>•</span>
               <span>24/7 Support</span>
             </div>
+          </div>
           </div>
         </div>
       </div>

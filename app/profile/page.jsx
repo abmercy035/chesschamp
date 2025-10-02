@@ -238,7 +238,7 @@ export default function ProfilePage({ params }) {
 					</div>
 
 					{/* Navigation Tabs */}
-					<div className="flex space-x-2 mb-8 glass rounded-2xl p-2 backdrop-blur-xl border border-white/20">
+					<div className="flex space-x-2 mb-8 glass rounded-2xl p-2 backdrop-blur-xl border border-white/20 overflow-x-auto">
 						{[
 							{ id: 'overview', label: 'Overview', icon: '📊' },
 							{ id: 'statistics', label: 'Statistics', icon: '📈' },
