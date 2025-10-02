@@ -1,0 +1,237 @@
+@import "tailwindcss";
+
+:root {
+	/* Chess Theme Colors */
+	--chess-gold: #d4af37;
+	--chess-gold-light: #e6c866;
+	--chess-gold-dark: #b8941a;
+	--chess-gold-glow: rgba(212, 175, 55, 0.3);
+
+	/* Background Colors */
+	--chess-primary: #1a1a2e;
+	--chess-secondary: #16213e;
+	--chess-accent: #0f3460;
+	--chess-bg-gradient: linear-gradient(135deg, var(--chess-primary) 0%, var(--chess-secondary) 50%, var(--chess-accent) 100%);
+
+	/* Text Colors */
+	--chess-text: #e5e7eb;
+	--chess-text-muted: #9ca3af;
+	--chess-text-dark: #374151;
+
+	/* Glass Effect */
+	--glass-bg: rgba(255, 255, 255, 0.05);
+	--glass-bg-strong: rgba(255, 255, 255, 0.1);
+	--glass-border: rgba(255, 255, 255, 0.1);
+	--glass-border-strong: rgba(255, 255, 255, 0.2);
+
+	/* Spacing */
+	--spacing-xs: 0.5rem;
+	--spacing-sm: 1rem;
+	--spacing-md: 1.5rem;
+	--spacing-lg: 2rem;
+	--spacing-xl: 3rem;
+
+	/* Border Radius */
+	--radius-sm: 0.5rem;
+	--radius-md: 0.75rem;
+	--radius-lg: 1rem;
+	--radius-xl: 1.5rem;
+	--radius-2xl: 2rem;
+}
+
+*::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+	background: var(--chess-primary);
+	border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+	background: linear-gradient(45deg, var(--chess-gold), var(--chess-gold-light));
+	border-radius: 10px;
+	border: 1px solid var(--chess-gold-dark);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background: linear-gradient(45deg, var(--chess-gold-light), var(--chess-gold));
+}
+
+
+
+body {
+	color: var(--chess-text);
+	background: var(--chess-bg-gradient);
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+	min-height: 100vh;
+	background-attachment: fixed;
+}
+
+@layer utilities {
+	.text-balance {
+		text-wrap: balance;
+	}
+
+	/* Glass Effects */
+	.glass {
+		background: var(--glass-bg);
+		backdrop-filter: blur(10px);
+		border: 1px solid var(--glass-border);
+		border-radius: var(--radius-xl);
+	}
+
+	.glass-strong {
+		background: var(--glass-bg-strong);
+		backdrop-filter: blur(16px);
+		border: 1px solid var(--glass-border-strong);
+		border-radius: var(--radius-xl);
+	}
+
+	/* Chess Theme Utilities */
+	.chess-bg {
+		background: var(--chess-bg-gradient);
+	}
+
+	.chess-gold-gradient {
+		background: linear-gradient(135deg, var(--chess-gold) 0%, var(--chess-gold-light) 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.chess-text {
+		color: var(--chess-text);
+	}
+
+	.chess-text-muted {
+		color: var(--chess-text-muted);
+	}
+
+	.chess-shadow {
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+	}
+
+	.chess-shadow-glow {
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1), 0 0 30px var(--chess-gold-glow);
+	}
+
+	/* Animations */
+	.floating-animation {
+		animation: float 3s ease-in-out infinite;
+	}
+
+	.pulse-glow {
+		animation: pulseGlow 2s ease-in-out infinite alternate;
+	}
+
+	/* Buttons */
+	.btn-primary {
+		padding: 1rem 1.5rem;
+		border-radius: 0.75rem;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		background: linear-gradient(to right, #facc15, #eab308);
+		color: #1f2937;
+	}
+
+	.btn-primary:hover {
+		background: linear-gradient(to right, #fde047, #facc15);
+		transform: scale(1.05);
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+	}
+
+	.btn-secondary {
+		padding: 1rem 1.5rem;
+		border-radius: 0.75rem;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		background: var(--glass-bg);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: white;
+	}
+
+	.btn-secondary:hover {
+		background: rgba(255, 255, 255, 0.1);
+		border-color: rgba(255, 255, 255, 0.3);
+	}
+
+	.btn-danger {
+		padding: 1rem 1.5rem;
+		border-radius: 0.75rem;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		background: rgba(239, 68, 68, 0.2);
+		border: 1px solid rgba(248, 113, 113, 0.3);
+		color: #f87171;
+	}
+
+	.btn-danger:hover {
+		background: rgba(239, 68, 68, 0.3);
+		border-color: rgba(248, 113, 113, 0.5);
+	}
+
+	/* Cards */
+	.card {
+		background: var(--glass-bg);
+		backdrop-filter: blur(10px);
+		border: 1px solid var(--glass-border);
+		border-radius: var(--radius-xl);
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+		padding: 1.5rem;
+	}
+
+	.card-strong {
+		background: var(--glass-bg-strong);
+		backdrop-filter: blur(16px);
+		border: 1px solid var(--glass-border-strong);
+		border-radius: var(--radius-xl);
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+		padding: 1.5rem;
+	}
+
+	/* Responsive spacing utilities */
+	.space-y-responsive> :not([hidden])~ :not([hidden]) {
+		margin-top: clamp(var(--spacing-xs), 2vw, var(--spacing-md));
+	}
+
+	.p-responsive {
+		padding: clamp(var(--spacing-sm), 4vw, var(--spacing-lg));
+	}
+
+	.text-responsive-lg {
+		font-size: clamp(1.5rem, 4vw, 3rem);
+	}
+
+	.text-responsive-xl {
+		font-size: clamp(2rem, 5vw, 4rem);
+
+
+	}
+}
+
+@keyframes float {
+
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+
+	50% {
+		transform: translateY(-10px);
+
+
+	}
+}
+
+@keyframes pulseGlow {
+	0% {
+		text-shadow: 0 0 10px var(--chess-gold), 0 0 20px var(--chess-gold), 0 0 30px var(--chess-gold);
+	}
+
+	100% {
+		text-shadow: 0 0 20px var(--chess-gold), 0 0 30px var(--chess-gold), 0 0 40px rgba(212, 175, 55, 0.8);
+	}
+}
