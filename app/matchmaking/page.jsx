@@ -44,7 +44,7 @@ export default function MatchmakingPage() {
 					setUserId(userData._id);
 				}
 			} catch (error) {
-				console.error('Error getting user info:', error);
+				// Error getting user info
 			}
 		};
 		
@@ -55,19 +55,19 @@ export default function MatchmakingPage() {
 	useEffect(() => {
 		if (!ably || !userId) return;
 
-		console.log('🔔 Setting up user channel for:', userId);
+		// Setting up user channel
 		const userChannel = ably.channels.get(`user-${userId}`);
 		
 		// Listen for match found notifications
 		userChannel.subscribe('matchFound', (message) => {
-			console.log('🔔 Match found notification:', message.data);
+			// Match found notification received
 			setMatchFound(message.data);
 			setIsInQueue(false);
 		});
 
 		// Listen for match declined notifications
 		userChannel.subscribe('matchDeclined', (message) => {
-			console.log('❌ Match declined notification:', message.data);
+			// Match declined notification received
 			setMatchFound(null);
 			setPendingMatch(null);
 			setWaitingForOpponent(false);
@@ -78,7 +78,7 @@ export default function MatchmakingPage() {
 
 		// Listen for game starting notifications
 		userChannel.subscribe('gameStarting', (message) => {
-			console.log('🎮 Game starting notification:', message.data);
+			// Game starting notification received
 			router.push(`/game/${message.data.gameId}`);
 		});
 
@@ -104,7 +104,7 @@ export default function MatchmakingPage() {
 				});
 			}
 		} catch (error) {
-			console.error('Error fetching queue info:', error);
+			// Error fetching queue info
 		}
 	};
 
@@ -123,7 +123,7 @@ export default function MatchmakingPage() {
 				setPendingMatch(data.pendingMatch);
 			}
 		} catch (error) {
-			console.error('Error checking queue status:', error);
+			// Error checking queue status
 		}
 	};
 

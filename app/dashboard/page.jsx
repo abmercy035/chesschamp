@@ -24,7 +24,7 @@ export default function Dashboard() {
 				credentials: 'include'
 			});
 			const games = await res.json();
-			console.log(games)
+			// Games loaded
 			setGames(games || []);
 			setError('');
 		} catch (err) {
@@ -54,15 +54,15 @@ export default function Dashboard() {
 			credentials: 'include',
 			headers: { 'Content-Type': 'application/json' }
 		});
-		console.log(res)
+		// Game creation response
 		const data = await res.json();
 
-		console.log('🎮 Create game response:', { status: res.status, data });
+		// Game creation response received
 
 		if (res.ok && data.id) {
 			// Refresh games list to show the new game at the top
 			await fetchGames(true);
-			console.log(data)
+			// Game created
 			// router.push(`/game/${data.id}`);
 		} else {
 			setError(data.error || 'Failed to create game. Please make sure you are logged in.');
@@ -77,7 +77,7 @@ export default function Dashboard() {
 			headers: { 'Content-Type': 'application/json' }
 		});
 		const data = await res.json();
-		console.log(res)
+		// Join game response
 		if (res.ok) {
 			if (data.role === 'spectator') {
 				await showAlert('Joining as spectator - this game already has 2 players');

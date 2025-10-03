@@ -38,7 +38,7 @@ export default function MatchmakingPage() {
 				setUserElo(data.currentUserElo);
 			}
 		} catch (error) {
-			console.error('Error fetching queue info:', error);
+			// Error fetching queue info
 		}
 	};
 

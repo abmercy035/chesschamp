@@ -36,7 +36,7 @@ export default function ProfilePage({ params }) {
 				}
 
 				if (userProfile) {
-					console.log('Loaded profile:', userProfile);
+					// Profile loaded successfully
 					setProfile(userProfile);
 
 					// Backend returns flattened profile structure  
@@ -50,7 +50,7 @@ export default function ProfilePage({ params }) {
 					}
 				}
 			} catch (error) {
-				console.error('Error loading profile:', error);
+				// Error loading profile
 			} finally {
 				setLoading(false);
 			}
@@ -70,7 +70,7 @@ export default function ProfilePage({ params }) {
 				setEditMode(false);
 			}
 		} catch (error) {
-			console.error('Error saving profile:', error);
+			// Error saving profile
 		}
 	};
 
@@ -81,7 +81,7 @@ export default function ProfilePage({ params }) {
 				setProfile(updatedProfile);
 			}
 		} catch (error) {
-			console.error('Error updating preferences:', error);
+			// Error updating preferences
 		}
 	};
 
@@ -677,7 +677,7 @@ export default function ProfilePage({ params }) {
 														await showAlert('Profile reset successfully!');
 													}
 												} catch (error) {
-													console.error('Error resetting profile:', error);
+													// Error resetting profile
 													await showAlert('Failed to reset profile. Please try again.');
 												}
 											}

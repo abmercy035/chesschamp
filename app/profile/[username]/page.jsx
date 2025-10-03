@@ -21,7 +21,7 @@ export default function UserProfilePage({ params }) {
 				const userProfile = await profileService.getProfileByUsername(username);
 
 				if (userProfile) {
-					console.log('Loaded profile for user:', username, userProfile);
+					// Profile loaded for user
 					setProfile(userProfile);
 
 					// Load achievements for the user
@@ -32,7 +32,7 @@ export default function UserProfilePage({ params }) {
 					setError('User not found');
 				}
 			} catch (error) {
-				console.error('Error loading profile for user:', username, error);
+				// Error loading profile for user
 				setError('Failed to load profile');
 			} finally {
 				setLoading(false);

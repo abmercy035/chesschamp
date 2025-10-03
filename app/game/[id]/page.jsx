@@ -15,7 +15,7 @@ const playSound = (soundFunction) => {
     try {
       soundFunction();
     } catch (error) {
-      console.warn('Sound playback error:', error);
+      // Sound playback failed silently
     }
   }
 };
@@ -52,7 +52,7 @@ export default function GamePage({ params }) {
   useEffect(() => {
     if (!id || !ably || isInitialized.current) return;
 
-    console.log('Initializing game page for:', id, 'with Ably instance:', !!ably);
+    // Initialize game page
     isInitialized.current = true;
 
     // Load user preferences
@@ -61,10 +61,10 @@ export default function GamePage({ params }) {
         const profile = await profileService.getProfile();
         if (profile && profile.preferences) {
           setUserPreferences(profile.preferences);
-          console.log('✅ Loaded user preferences:', profile.preferences);
+          // User preferences loaded successfully
         }
       } catch (error) {
-        console.error('❌ Error loading preferences:', error);
+        // Error loading preferences
       }
     };
 
@@ -76,7 +76,6 @@ export default function GamePage({ params }) {
     })
       .then(res => res.json())
       .then(game => {
-        console.log({ game });
         setGame(game);
 
         // Make sure the channel exists before publishing
@@ -91,11 +90,7 @@ export default function GamePage({ params }) {
           });
         }
 
-        console.log('🎮 Game data received:', game);
-        console.log('🎮 User role:', game.userRole);
-        console.log('🎮 Player color:', game.playerColor);
-        console.log('🎮 Current turn:', game.turn);
-        console.log('⏰ Time left:', game.timeLeft);
+        // Game data loaded
         if (game.timeLeft) {
           setTimeLeft(game.timeLeft);
         }
@@ -109,12 +104,12 @@ export default function GamePage({ params }) {
     // Subscribe to channel using the global Ably instance
     if (!channelRef.current && ably) {
       try {
-        console.log('Subscribing to channel:', `game-${id}`);
+        // Subscribe to game channel
         channelRef.current = ably.channels.get(`game-${id}`);
 
         // Subscribe to game start events (when second player joins)
         channelRef.current.subscribe('gameStart', msg => {
-          console.log('🎉 Received game start via Ably:', msg.data);
+          // Game started - both players joined
 
           // Preserve user-specific properties when updating game state
           setGame(prevGame => ({
@@ -141,11 +136,11 @@ export default function GamePage({ params }) {
 
           // Auto-hide notification after 5 seconds
           setTimeout(() => setNotification(null), 5000);
-          console.log('🎮 Game started! Both players have joined.');
+          // Game started - both players joined
         });
 
         channelRef.current.subscribe('move', msg => {
-          console.log('Received move via Ably:', msg.data);
+          // Move received via Ably
 
           // Preserve user-specific properties when updating game state
           setGame(prevGame => ({
@@ -163,16 +158,16 @@ export default function GamePage({ params }) {
 
         // Subscribe to time sync events for real-time timer updates (from moves)
         channelRef.current.subscribe('timeSync', msg => {
-          console.log('Received time sync via Ably:', msg.data);
+          // Time sync received via Ably
           if (msg.data.timeLeft) {
             setTimeLeft(msg.data.timeLeft);
-            console.log('⏰ Timer synced via Ably move update');
+            // Timer synced via Ably
           }
         });
 
         // Subscribe to draw offer events
         channelRef.current.subscribe('drawOffer', msg => {
-          console.log('Received draw offer via Ably:', msg.data);
+          // Draw offer received via Ably
           setDrawOffer(msg.data.offeredBy);
           setShowDrawOfferModal(true);
 
@@ -183,7 +178,7 @@ export default function GamePage({ params }) {
         });
 
         channelRef.current.subscribe('drawDeclined', msg => {
-          console.log('Draw declined via Ably:', msg.data);
+          // Draw declined via Ably
           setDrawOffer(null);
           setShowDrawOfferModal(false);
           setNotification({
@@ -201,7 +196,7 @@ export default function GamePage({ params }) {
 
         // Subscribe to game end events
         channelRef.current.subscribe('gameEnd', msg => {
-          console.log('Received game end via Ably:', msg.data);
+          // Game end received via Ably
           const { reason, winner, loser, game: gameData } = msg.data;
 
           // Map win/draw reasons to user-friendly messages
@@ -224,15 +219,7 @@ export default function GamePage({ params }) {
           let winnerColor = null;
 
           if (!isDraw && winner) {
-            console.log('🏆 Winner determination:', {
-              reason,
-              winner,
-              gameData: gameData ? {
-                host: gameData.host,
-                white: gameData.white,
-                black: gameData.black
-              } : 'No game data'
-            });
+            // Winner determination logic
 
             // For timeout and resignation, backend sends winner object directly
             // For checkmate, backend also sends winner object
@@ -253,7 +240,7 @@ export default function GamePage({ params }) {
               }
             }
 
-            console.log('🎯 Final winner color determined:', winnerColor);
+            // Final winner color determined
           }
 
           setGameResult({
@@ -310,30 +297,16 @@ export default function GamePage({ params }) {
             setTimeout(() => {
               profileService.recordGameResult(gameResultData).then(updatedProfile => {
                 if (updatedProfile && updatedProfile.stats) {
-                  console.log('✅ Game result recorded and profile updated:', {
-                    gamesPlayed: updatedProfile.stats.gamesPlayed,
-                    wins: updatedProfile.stats.wins,
-                    losses: updatedProfile.stats.losses,
-                    draws: updatedProfile.stats.draws,
-                    winRate: updatedProfile.stats.winRate
-                  });
+                  // Game result recorded and profile updated
                 } else {
-                  console.error('❌ Failed to record game result - invalid response:', updatedProfile);
+                  // Failed to record game result
                 }
               }).catch(error => {
-                console.error('❌ Error recording game result:', error);
-                console.error('❌ Error details:', error.message || error);
+                // Error recording game result
               });
             }, 1500); // Wait 1.5 seconds for backend processing
 
-            console.log('📊 Game ended:', {
-              result: isWin ? 'win' : isLoss ? 'loss' : 'draw',
-              reason,
-              gameTime: `${Math.round(gameTimeSeconds / 60)}m`,
-              moves: totalMoves,
-              winnerColor: winnerColor,
-              gameResultData
-            });
+            // Game ended with result tracking
           }
 
           // Preserve user-specific properties when updating game state
@@ -345,14 +318,14 @@ export default function GamePage({ params }) {
           }));
         });
       } catch (error) {
-        console.error('Failed to initialize Ably channel:', error);
+        // Failed to initialize Ably channel
         setError('Failed to connect to game server');
       }
     }
 
     // Cleanup function
     return () => {
-      console.log('Cleaning up game page');
+      // Cleaning up game page
 
       // Clear any active timers
       if (timerRef.current) {
@@ -362,7 +335,7 @@ export default function GamePage({ params }) {
 
       // Unsubscribe from Ably channel
       if (channelRef.current) {
-        console.log('Unsubscribing from channel');
+        // Unsubscribing from channel
         channelRef.current.unsubscribe();
         channelRef.current = null;
       }
@@ -380,14 +353,14 @@ export default function GamePage({ params }) {
 
     // Re-subscribe with current game context
     channelRef.current.subscribe('drawOffer', msg => {
-      console.log('Received draw offer via Ably:', msg.data);
+      // Received draw offer via Ably
 
       // Only show modal to the recipient (not the sender)
       if (msg.data.offeredBy.id !== game.userId) {
         setDrawOffer(msg.data.offeredBy);
         setShowDrawOfferModal(true);
       } else {
-        console.log('Not showing draw offer modal - user is the sender');
+        // Not showing draw offer modal - user is the sender
       }
     });
 
@@ -406,7 +379,7 @@ export default function GamePage({ params }) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      console.log('⏰ Timer stopped - game not active');
+      // Timer stopped - game not active
       return;
     }
 
@@ -416,7 +389,7 @@ export default function GamePage({ params }) {
       timerRef.current = null;
     }
 
-    console.log('⏰ Client-side timer started');
+    // Client-side timer started
 
     // Run client-side countdown (much more server-friendly)
     timerRef.current = setInterval(() => {
@@ -429,7 +402,7 @@ export default function GamePage({ params }) {
 
           // Check if time is about to run out (last 10 seconds) - sync with server for accuracy
           if (newTime[currentPlayer] <= 10 && newTime[currentPlayer] % 5 === 0) {
-            console.log('⏰ Time running low, syncing with server...');
+            // Time running low, syncing with server
             fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/game/time-sync/${id}`, {
               credentials: 'include'
             }).then(res => res.json()).then(data => {
@@ -438,12 +411,12 @@ export default function GamePage({ params }) {
               } else if (data.timeLeft) {
                 setTimeLeft(data.timeLeft);
               }
-            }).catch(err => console.log('Timer sync error:', err));
+            }).catch(err => {/* Timer sync error */});
           }
 
           // If time reaches 0, let server handle timeout
           if (newTime[currentPlayer] <= 0) {
-            console.log(`⏰ Time up for ${currentPlayer} - server will handle timeout`);
+            // Time up - server will handle timeout
             clearInterval(timerRef.current);
             timerRef.current = null;
           }
@@ -462,11 +435,11 @@ export default function GamePage({ params }) {
   }, [game?.turn, game?.status, id]);
 
   function updateBoardFromFEN(fenString) {
-    console.log('Updating board from FEN:', fenString);
+    // Updating board from FEN
 
     // If no FEN provided or it's 'start', use starting position
     if (!fenString || fenString === 'start') {
-      console.log('Using starting position');
+      // Using starting position
       setBoard(initialBoard);
       return;
     }
@@ -485,11 +458,11 @@ export default function GamePage({ params }) {
         })
       );
 
-      console.log('Successfully converted FEN to board:', newBoard);
+      // Successfully converted FEN to board
       setBoard(newBoard);
     } catch (error) {
       console.error('Error parsing FEN:', error, 'FEN:', fenString);
-      console.log('Falling back to starting position');
+      // Falling back to starting position
       setBoard(initialBoard);
     }
   }
@@ -531,7 +504,7 @@ export default function GamePage({ params }) {
   // Handle pawn promotion piece selection
   function handlePromotionChoice(piece) {
     if (promotionMove) {
-      console.log('🎯 Promotion choice selected:', piece);
+      // Promotion choice selected
 
       // Play promotion sound if enabled
       if (userPreferences.soundEffects) {
@@ -573,14 +546,14 @@ export default function GamePage({ params }) {
       const moves = chess.moves({ square: fromSquare, verbose: true });
       return moves.map(move => move.to);
     } catch (error) {
-      console.log('Error getting legal moves:', error);
+      // Error getting legal moves
       return [];
     }
   }
 
   // Updated function for proper chess move submission
   async function submitMove(fromSquare, toSquare, promotion = null) {
-    console.log('🚀 Submitting move:', { from: fromSquare, to: toSquare, promotion });
+    // Submitting move
     setError('');
 
     try {
@@ -607,7 +580,7 @@ export default function GamePage({ params }) {
 
       const data = await res.json();
       if (res.ok) {
-        console.log('✅ Move submitted successfully:', data.moveResult);
+        // Move submitted successfully
 
         // Play appropriate sound effects if enabled
         if (userPreferences.soundEffects) {
@@ -632,14 +605,14 @@ export default function GamePage({ params }) {
 
         // Check if game was deleted (finished)
         if (data.gameDeleted) {
-          console.log('🎯 Game finished and deleted, redirecting to dashboard');
+          // Game finished, redirecting to dashboard
           router.push('/dashboard');
           return;
         }
 
         // The move response will be handled by Ably realtime update
       } else {
-        console.log('❌ Move submission failed:', data.error);
+        // Move submission failed
         setError(data.error);
 
         // Play error sound if enabled
@@ -648,7 +621,7 @@ export default function GamePage({ params }) {
         }
       }
     } catch (error) {
-      console.log('❌ Network error:', error);
+      // Network error
       setError('Failed to submit move - network error');
 
       // Play error sound if enabled
@@ -675,12 +648,12 @@ export default function GamePage({ params }) {
       });
 
       if (res.ok) {
-        console.log('✅ Resignation successful');
+        // Resignation successful
         const data = await res.json();
 
         // Check if game was deleted
         if (data.gameDeleted) {
-          console.log('🎯 Game finished and deleted after resignation, redirecting to dashboard');
+          // Game finished after resignation, redirecting
           router.push('/dashboard');
           return;
         }
@@ -691,7 +664,7 @@ export default function GamePage({ params }) {
         setError(data.error || 'Failed to resign');
       }
     } catch (error) {
-      console.log('❌ Resignation failed:', error);
+      // Resignation failed
       setError('Failed to resign');
     }
   }
@@ -705,7 +678,7 @@ export default function GamePage({ params }) {
       });
 
       if (res.ok) {
-        console.log('✅ Draw offer sent');
+        // Draw offer sent
         setNotification({
           type: 'drawOffered',
           message: 'Draw offer sent to your opponent',
@@ -716,7 +689,7 @@ export default function GamePage({ params }) {
         setError(data.error || 'Failed to offer draw');
       }
     } catch (error) {
-      console.log('❌ Draw offer failed:', error);
+      // Draw offer failed
       setError('Failed to offer draw');
     }
   }
@@ -732,7 +705,7 @@ export default function GamePage({ params }) {
       });
 
       if (res.ok) {
-        console.log(`✅ Draw ${response}ed`);
+        // Draw response sent
         const data = await res.json();
         setDrawOffer(null);
         setShowDrawOfferModal(false);
@@ -740,7 +713,7 @@ export default function GamePage({ params }) {
         if (response === 'accept') {
           // Check if game was deleted
           if (data.gameDeleted) {
-            console.log('🎯 Game finished and deleted after draw acceptance, redirecting to dashboard');
+            // Game finished after draw acceptance, redirecting
             router.push('/dashboard');
             return;
           }
@@ -757,7 +730,7 @@ export default function GamePage({ params }) {
         setError(data.error || `Failed to ${response} draw`);
       }
     } catch (error) {
-      console.log(`❌ Draw ${response} failed:`, error);
+      // Draw response failed
       setError(`Failed to ${response} draw`);
     }
   }
@@ -769,7 +742,7 @@ export default function GamePage({ params }) {
 
     // If we don't have user role info yet, allow the move (backend will validate)
     if (game.userRole && game.userRole !== 'player') {
-      console.log('❌ Blocked: Spectator');
+      // Blocked: Spectator
       setError('Spectators cannot make moves');
       return;
     }
@@ -780,7 +753,7 @@ export default function GamePage({ params }) {
     log([game.playerColor, game.turn !== game.playerColor]);
 
     if (game.playerColor && game.turn !== game.playerColor) {
-      console.log('❌ Blocked: Not your turn');
+      // Blocked: Not your turn
       setError('Not your turn');
       return;
     }
@@ -791,11 +764,11 @@ export default function GamePage({ params }) {
       const fromCol = selectedSquare.col;
       const fromPiece = board[fromRow][fromCol];
       const toPiece = board[row][col];
-      console.log('🎯 Move attempt:', { fromPiece, toPiece, from: [fromRow, fromCol], to: [row, col] });
+      // Move attempt
 
       // Check if there's actually a piece to move
       if (!fromPiece) {
-        console.log('❌ Blocked: No piece at selected square');
+        // Blocked: No piece at selected square
         setError('No piece selected!');
         setSelectedSquare(null);
         return;
@@ -806,7 +779,7 @@ export default function GamePage({ params }) {
         const fromPieceColor = fromPiece === fromPiece.toUpperCase() ? 'w' : 'b';
         const toPieceColor = toPiece === toPiece.toUpperCase() ? 'w' : 'b';
         if (fromPieceColor === toPieceColor) {
-          console.log('❌ Blocked: Cannot capture own piece');
+          // Blocked: Cannot capture own piece
           setError('You cannot capture your own pieces!');
           setSelectedSquare(null);
           return;
@@ -817,15 +790,15 @@ export default function GamePage({ params }) {
       const fromSquare = `${String.fromCharCode(97 + fromCol)}${8 - fromRow}`;
       const toSquare = `${String.fromCharCode(97 + col)}${8 - row}`;
 
-      console.log('📝 Submitting move:', { from: fromSquare, to: toSquare, piece: fromPiece });
+      // Submitting move
 
       // Check if this is a pawn promotion move (pawn reaching last rank)
       if (isPawnPromotion(fromSquare, toSquare, fromPiece)) {
-        console.log('🎯 Pawn promotion detected');
+        // Pawn promotion detected
 
         // Auto-promote to Queen if preference is enabled
         if (userPreferences.autoQueen) {
-          console.log('♕ Auto-promoting to Queen');
+          // Auto-promoting to Queen
           setSelectedSquare(null);
           setLegalMoves([]);
           setError('');
@@ -969,17 +942,7 @@ export default function GamePage({ params }) {
             <span>Return to Arena</span>
           </button>
 
-          {/* Sound Test Button (temporary for debugging) */}
-          <button
-            onClick={() => {
-              console.log('🧪 Testing sound system...');
-              soundManager.testSound();
-            }}
-            className="cursor-pointer bg-blue-600 border border-blue-400/50 hover:border-blue-300 text-white hover:text-blue-200 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 hover:scale-105 backdrop-blur-sm flex items-center space-x-2"
-          >
-            <span>🎵</span>
-            <span>Test Sound</span>
-          </button>
+
         </div>
         {/* Game Layout - Simple 2x2 Grid */}
         <div className="grid grid-cols-2 gap-4">

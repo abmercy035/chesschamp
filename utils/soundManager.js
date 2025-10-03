@@ -1,5 +1,5 @@
 // Sound Effects Manager for Chess Game
-// This file manages audio playback for various chess game events
+// This file manages a						// Sound data loadeddio playback for various chess game events
 
 class SoundManager {
 	constructor() {
@@ -31,7 +31,7 @@ class SoundManager {
 		// Wait for user interaction before enabling audio
 		const enableAudio = () => {
 			this.userInteracted = true;
-			console.log('🎵 Audio enabled after user interaction');
+			// Audio enabled after user interaction
 			document.removeEventListener('click', enableAudio);
 			document.removeEventListener('keydown', enableAudio);
 			document.removeEventListener('touchstart', enableAudio);
@@ -46,7 +46,7 @@ class SoundManager {
 		// Only preload if we're in the browser
 		if (!this.isClient) return;
 		
-		console.log('🎵 Loading sound files...');
+		// Loading sound files
 		
 		// Preload audio files for better performance
 		Object.entries(this.sounds).forEach(([key, path]) => {
@@ -57,7 +57,7 @@ class SoundManager {
 				
 				audio.addEventListener('canplaythrough', () => {
 					this.audioCache[key] = audio;
-					console.log(`✅ Sound loaded: ${key}`);
+					// Sound loaded
 				});
 				
 				audio.addEventListener('loadeddata', () => {
@@ -80,34 +80,7 @@ class SoundManager {
 		});
 	}
 
-	// Test method to check if sounds are working
-	testSound() {
-		if (!this.isClient) return;
-		
-		console.log('🧪 Testing sound system...');
-		console.log('User interacted:', this.userInteracted);
-		console.log('Loaded sounds:', Object.keys(this.audioCache));
-		console.log('Audio files status:');
-		
-		Object.entries(this.audioCache).forEach(([key, audio]) => {
-			if (audio && audio.readyState !== undefined) {
-				console.log(`  ${key}: readyState=${audio.readyState}, duration=${audio.duration}`);
-			} else {
-				console.log(`  ${key}: fallback mode`);
-			}
-		});
-		
-		if (this.userInteracted) {
-			console.log('🎵 Playing test sequence...');
-			this.playMove();
-			setTimeout(() => this.playCapture(), 500);
-			setTimeout(() => this.playCheck(), 1000);
-		} else {
-			console.warn('🔇 Click anywhere on the page first to enable audio');
-			// Try beep anyway to test Web Audio API
-			this.playBeep(440, 300);
-		}
-	}
+
 
 	play(soundName, volume = 0.5) {
 		// Only play sounds in the browser
@@ -115,7 +88,7 @@ class SoundManager {
 
 		// Check if user has interacted with the page (required for audio)
 		if (!this.userInteracted) {
-			console.warn('🔇 Audio blocked - user interaction required');
+			// Audio blocked - user interaction required
 			return;
 		}
 		
@@ -125,14 +98,14 @@ class SoundManager {
 				audio.volume = Math.max(0, Math.min(1, volume));
 				audio.currentTime = 0; // Reset to beginning
 				
-				console.log(`🎵 Playing sound: ${soundName} at volume ${volume}`);
+				// Playing sound
 				
 				const playPromise = audio.play();
 
 				if (playPromise !== undefined) {
 					playPromise
 						.then(() => {
-							console.log(`✅ Sound played successfully: ${soundName}`);
+							// Sound played successfully
 						})
 						.catch(error => {
 							console.warn('🚫 Audio play failed:', soundName, error);
@@ -168,7 +141,7 @@ class SoundManager {
 			oscillator.start(audioContext.currentTime);
 			oscillator.stop(audioContext.currentTime + duration / 1000);
 			
-			console.log(`🎵 Played beep: ${frequency}Hz for ${duration}ms`);
+			// Played beep sound
 		} catch (error) {
 			console.warn('🚫 Beep failed:', error);
 		}
@@ -176,28 +149,28 @@ class SoundManager {
 
 	// Convenience methods for specific game events
 	playMove() {
-		console.log('🎵 Playing move sound...');
+				// Loading sound files
 		this.play('move', 0.4);
 		// Fallback beep
 		setTimeout(() => this.playBeep(400, 150), 100);
 	}
 
 	playCapture() {
-		console.log('🎵 Playing capture sound...');
+
 		this.play('capture', 0.5);
 		// Fallback beep
 		setTimeout(() => this.playBeep(600, 200), 100);
 	}
 
 	playCheck() {
-		console.log('🎵 Playing check sound...');
+
 		this.play('check', 0.6);
 		// Fallback beep
 		setTimeout(() => this.playBeep(800, 300), 100);
 	}
 
 	playCheckmate() {
-		console.log('🎵 Playing checkmate sound...');
+
 		this.play('checkmate', 0.7);
 		// Fallback beep sequence
 		setTimeout(() => {
@@ -208,14 +181,14 @@ class SoundManager {
 	}
 
 	playCastling() {
-		console.log('🎵 Playing castling sound...');
+
 		this.play('castling', 0.5);
 		// Fallback beep
 		setTimeout(() => this.playBeep(500, 180), 100);
 	}
 
 	playPromotion() {
-		console.log('🎵 Playing promotion sound...');
+
 		this.play('promotion', 0.6);
 		// Fallback beep sequence
 		setTimeout(() => {
@@ -226,7 +199,7 @@ class SoundManager {
 	}
 
 	playGameStart() {
-		console.log('🎵 Playing game start sound...');
+
 		this.play('gameStart', 0.5);
 		// Fallback beep sequence for game start
 		setTimeout(() => {
@@ -236,7 +209,7 @@ class SoundManager {
 	}
 
 	playGameEnd() {
-		console.log('🎵 Playing game end sound...');
+
 		this.play('gameEnd', 0.6);
 		// Fallback beep sequence for game end
 		setTimeout(() => {
@@ -246,14 +219,14 @@ class SoundManager {
 	}
 
 	playNotification() {
-		console.log('🎵 Playing notification sound...');
+
 		this.play('notification', 0.4);
 		// Fallback beep
 		setTimeout(() => this.playBeep(700, 250), 100);
 	}
 
 	playError() {
-		console.log('🎵 Playing error sound...');
+
 		this.play('error', 0.3);
 		// Fallback beep for error
 		setTimeout(() => {

@@ -35,7 +35,7 @@ export default function LeaderboardPage() {
 				setPagination(data.pagination);
 			}
 		} catch (error) {
-			console.error('Error fetching leaderboard:', error);
+			// Error fetching leaderboard
 		}
 		setLoading(false);
 	};
@@ -52,7 +52,7 @@ export default function LeaderboardPage() {
 				setCountries(data.countries);
 			}
 		} catch (error) {
-			console.error('Error fetching countries:', error);
+			// Error fetching countries
 		}
 	};
 
