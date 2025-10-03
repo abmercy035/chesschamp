@@ -237,7 +237,7 @@ export default function GamePage({ params }) {
             // For timeout and resignation, backend sends winner object directly
             // For checkmate, backend also sends winner object
             // Host is always white player, opponent is always black player
-            
+
             // Method 1: Check if gameData has host property (more reliable)
             if (gameData && gameData.host) {
               const hostId = typeof gameData.host === 'object' ? gameData.host._id : gameData.host;
@@ -294,22 +294,45 @@ export default function GamePage({ params }) {
               isLoss = !isWin && !isDrawResult;
             }
 
-            // Refresh profile after game ends to get updated stats
-            console.log('🔄 Refreshing profile after game end...');
-            profileService.refreshProfile().then(updatedProfile => {
-              if (updatedProfile) {
-                console.log('✅ Profile refreshed with updated stats');
-              }
-            }).catch(error => {
-              console.error('❌ Error refreshing profile:', error);
-            });
+            // Record game result in user statistics
+            console.log('� Recording game result in user statistics...');
+            const gameResultData = {
+              result: isWin ? 'win' : isLoss ? 'loss' : 'draw',
+              winMethod: reason,
+              gameTimeSeconds,
+              totalMoves,
+              isWin,
+              isLoss,
+              isDraw: isDrawResult
+            };
+
+            // Add a small delay to let backend automatic tracking complete first
+            setTimeout(() => {
+              profileService.recordGameResult(gameResultData).then(updatedProfile => {
+                if (updatedProfile && updatedProfile.stats) {
+                  console.log('✅ Game result recorded and profile updated:', {
+                    gamesPlayed: updatedProfile.stats.gamesPlayed,
+                    wins: updatedProfile.stats.wins,
+                    losses: updatedProfile.stats.losses,
+                    draws: updatedProfile.stats.draws,
+                    winRate: updatedProfile.stats.winRate
+                  });
+                } else {
+                  console.error('❌ Failed to record game result - invalid response:', updatedProfile);
+                }
+              }).catch(error => {
+                console.error('❌ Error recording game result:', error);
+                console.error('❌ Error details:', error.message || error);
+              });
+            }, 1500); // Wait 1.5 seconds for backend processing
 
             console.log('📊 Game ended:', {
               result: isWin ? 'win' : isLoss ? 'loss' : 'draw',
               reason,
               gameTime: `${Math.round(gameTimeSeconds / 60)}m`,
               moves: totalMoves,
-              winnerColor: winnerColor
+              winnerColor: winnerColor,
+              gameResultData
             });
           }
 
@@ -437,8 +460,8 @@ export default function GamePage({ params }) {
       }
     };
   }, [game?.turn, game?.status, id]);
-  
-   function updateBoardFromFEN(fenString) {
+
+  function updateBoardFromFEN(fenString) {
     console.log('Updating board from FEN:', fenString);
 
     // If no FEN provided or it's 'start', use starting position
@@ -945,7 +968,7 @@ export default function GamePage({ params }) {
             <span>←</span>
             <span>Return to Arena</span>
           </button>
-          
+
           {/* Sound Test Button (temporary for debugging) */}
           <button
             onClick={() => {
@@ -1107,7 +1130,7 @@ export default function GamePage({ params }) {
                   </>
                 ) : (
                   <>
-                  
+
                     <div className="text-gray-300 text-sm mt-1">🏆 Glory • 💎 Honor • ⚡ Dominance</div>
                   </>
                 )}
@@ -1366,10 +1389,10 @@ export default function GamePage({ params }) {
           <div className="glass rounded-3xl p-8 max-w-lg w-full mx-4 chess-shadow backdrop-blur-xl border border-white/20">
             <div className="text-center">
               {/* Icon based on game result */}
-              <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center shadow-2xl ${gameResult.isDraw 
+              <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center shadow-2xl ${gameResult.isDraw
                 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600'
-                : gameResult.winner === 'White' 
-                  ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' 
+                : gameResult.winner === 'White'
+                  ? 'bg-gradient-to-br from-yellow-400 to-yellow-600'
                   : 'bg-gradient-to-br from-gray-600 to-gray-800'
                 }`}>
                 {gameResult.isDraw ? (
@@ -1418,7 +1441,7 @@ export default function GamePage({ params }) {
                 >
                   🏟️ BACK TO ARENA
                 </button>
-                
+
                 <button
                   onClick={() => {
                     setShowGameEndModal(false);
