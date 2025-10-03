@@ -7,6 +7,18 @@ import profileService from '../../../utils/profileService';
 
 import { Chess } from 'chess.js'; // Import chess.js for proper move validation
 import { log } from '@/utils/logger';
+import soundManager from '../../../utils/soundManager';
+
+// Safe sound wrapper to prevent SSR issues
+const playSound = (soundFunction) => {
+  if (typeof window !== 'undefined' && soundFunction) {
+    try {
+      soundFunction();
+    } catch (error) {
+      console.warn('Sound playback error:', error);
+    }
+  }
+};
 
 export default function GamePage({ params }) {
   const { id } = use(params);
@@ -25,6 +37,10 @@ export default function GamePage({ params }) {
   const [showDrawOfferModal, setShowDrawOfferModal] = useState(false);
   const [drawOffer, setDrawOffer] = useState(null);
   const [showResignationModal, setShowResignationModal] = useState(false); // Current pending draw offer
+  const [showConfirmMoveModal, setShowConfirmMoveModal] = useState(false); // Confirm moves modal
+  const [pendingMove, setPendingMove] = useState(null); // Stores move awaiting confirmation
+  const [userPreferences, setUserPreferences] = useState({});
+  const [legalMoves, setLegalMoves] = useState([]);
 
   const channelRef = useRef(null);
   const isInitialized = useRef(false);
@@ -38,6 +54,21 @@ export default function GamePage({ params }) {
 
     console.log('Initializing game page for:', id, 'with Ably instance:', !!ably);
     isInitialized.current = true;
+
+    // Load user preferences
+    const loadPreferences = async () => {
+      try {
+        const profile = await profileService.getProfile();
+        if (profile && profile.preferences) {
+          setUserPreferences(profile.preferences);
+          console.log('✅ Loaded user preferences:', profile.preferences);
+        }
+      } catch (error) {
+        console.error('❌ Error loading preferences:', error);
+      }
+    };
+
+    loadPreferences();
 
     // Fetch game data
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/game/${id}`, {
@@ -102,6 +133,12 @@ export default function GamePage({ params }) {
             message: '🎉 Player joined! Game is now LIVE!',
             playerName: msg.data.game.black?.name || 'Player 2'
           });
+
+          // Play game start notification sound if enabled
+          if (userPreferences.soundEffects) {
+            playSound(() => soundManager.playGameStart());
+          }
+
           // Auto-hide notification after 5 seconds
           setTimeout(() => setNotification(null), 5000);
           console.log('🎮 Game started! Both players have joined.');
@@ -138,6 +175,11 @@ export default function GamePage({ params }) {
           console.log('Received draw offer via Ably:', msg.data);
           setDrawOffer(msg.data.offeredBy);
           setShowDrawOfferModal(true);
+
+          // Play notification sound for draw offer if enabled
+          if (userPreferences.soundEffects) {
+            playSound(() => soundManager.playNotification());
+          }
         });
 
         channelRef.current.subscribe('drawDeclined', msg => {
@@ -148,13 +190,19 @@ export default function GamePage({ params }) {
             type: 'drawDeclined',
             message: `${msg.data.declinedBy.color === 'white' ? 'White' : 'Black'} declined your draw offer`,
           });
+
+          // Play error sound for draw declined if enabled
+          if (userPreferences.soundEffects) {
+            playSound(() => soundManager.playError());
+          }
+
           setTimeout(() => setNotification(null), 3000);
         });
 
         // Subscribe to game end events
         channelRef.current.subscribe('gameEnd', msg => {
           console.log('Received game end via Ably:', msg.data);
-          const { reason, winner, loser } = msg.data;
+          const { reason, winner, loser, game: gameData } = msg.data;
 
           // Map win/draw reasons to user-friendly messages
           const getGameEndMessage = (reason) => {
@@ -171,14 +219,41 @@ export default function GamePage({ params }) {
             }
           };
 
-          // Determine winner correctly - winner is an object with id property
-          // msg.data.game.host is the host user ID, white player is always the host
+          // Determine if it's a draw
           const isDraw = ['stalemate', 'threefold', 'fiftyMove', 'insufficientMaterial', 'draw'].includes(reason);
           let winnerColor = null;
 
           if (!isDraw && winner) {
-            // Compare winner ID to host ID to determine color
-            winnerColor = winner.id === msg.data.game.host ? 'White' : 'Black';
+            console.log('🏆 Winner determination:', {
+              reason,
+              winner,
+              gameData: gameData ? {
+                host: gameData.host,
+                white: gameData.white,
+                black: gameData.black
+              } : 'No game data'
+            });
+
+            // For timeout and resignation, backend sends winner object directly
+            // For checkmate, backend also sends winner object
+            // Host is always white player, opponent is always black player
+            
+            // Method 1: Check if gameData has host property (more reliable)
+            if (gameData && gameData.host) {
+              const hostId = typeof gameData.host === 'object' ? gameData.host._id : gameData.host;
+              const winnerId = typeof winner === 'object' ? winner.id : winner;
+              winnerColor = hostId.toString() === winnerId.toString() ? 'White' : 'Black';
+            }
+            // Method 2: Fallback - try to use the winner object username and compare to white/black names
+            else if (gameData && gameData.white && gameData.black && winner.username) {
+              if (winner.username === gameData.white.name) {
+                winnerColor = 'White';
+              } else if (winner.username === gameData.black.name) {
+                winnerColor = 'Black';
+              }
+            }
+
+            console.log('🎯 Final winner color determined:', winnerColor);
           }
 
           setGameResult({
@@ -188,6 +263,15 @@ export default function GamePage({ params }) {
           });
 
           setShowGameEndModal(true);
+
+          // Play appropriate game end sound if enabled
+          if (userPreferences.soundEffects) {
+            if (reason === 'checkmate') {
+              playSound(() => soundManager.playCheckmate());
+            } else {
+              playSound(() => soundManager.playGameEnd());
+            }
+          }
 
           // Track game statistics in profile
           if (game && game.userId) {
@@ -199,24 +283,15 @@ export default function GamePage({ params }) {
             // Determine if current user won, lost, or drew
             let isWin = false;
             let isLoss = false;
-            let isDraw = false;
+            let isDrawResult = false;
 
-            if (reason === 'timeout') {
-              // For timeout, winner is determined by who didn't time out
-              const currentUserColor = game.host._id === game.userId ? 'White' : 'Black';
-              isWin = winner && (winner === currentUserColor ||
-                (winner === 'White' && game.host._id === game.userId) ||
-                (winner === 'Black' && game.opponent?._id === game.userId));
-              isLoss = !isWin && !isDraw;
-            } else if (['stalemate', 'threefold', 'fiftyMove', 'insufficientMaterial', 'draw'].includes(reason)) {
-              isDraw = true;
-            } else {
-              // For checkmate, resignation, etc.
-              if (winner) {
-                const winnerUserId = winner.id || winner._id;
-                isWin = winnerUserId === game.userId;
-                isLoss = !isWin;
-              }
+            if (['stalemate', 'threefold', 'fiftyMove', 'insufficientMaterial', 'draw'].includes(reason)) {
+              isDrawResult = true;
+            } else if (winner) {
+              // For timeout, checkmate, resignation, etc.
+              const winnerUserId = typeof winner === 'object' ? winner.id : winner;
+              isWin = winnerUserId === game.userId;
+              isLoss = !isWin && !isDrawResult;
             }
 
             // Refresh profile after game ends to get updated stats
@@ -233,7 +308,8 @@ export default function GamePage({ params }) {
               result: isWin ? 'win' : isLoss ? 'loss' : 'draw',
               reason,
               gameTime: `${Math.round(gameTimeSeconds / 60)}m`,
-              moves: totalMoves
+              moves: totalMoves,
+              winnerColor: winnerColor
             });
           }
 
@@ -360,7 +436,9 @@ export default function GamePage({ params }) {
         timerRef.current = null;
       }
     };
-  }, [game?.turn, game?.status, id]); function updateBoardFromFEN(fenString) {
+  }, [game?.turn, game?.status, id]);
+  
+   function updateBoardFromFEN(fenString) {
     console.log('Updating board from FEN:', fenString);
 
     // If no FEN provided or it's 'start', use starting position
@@ -431,9 +509,35 @@ export default function GamePage({ params }) {
   function handlePromotionChoice(piece) {
     if (promotionMove) {
       console.log('🎯 Promotion choice selected:', piece);
+
+      // Play promotion sound if enabled
+      if (userPreferences.soundEffects) {
+        playSound(() => soundManager.playPromotion());
+      }
+
       setShowPromotionModal(false);
       submitMove(promotionMove.from, promotionMove.to, piece);
       setPromotionMove(null);
+    }
+  }
+
+  // Handle move confirmation
+  function handleConfirmMove() {
+    if (pendingMove) {
+      setShowConfirmMoveModal(false);
+      submitMove(pendingMove.from, pendingMove.to);
+      setPendingMove(null);
+    }
+  }
+
+  // Handle move cancellation
+  function handleCancelMove() {
+    setShowConfirmMoveModal(false);
+    setPendingMove(null);
+
+    // Play error sound if enabled
+    if (userPreferences.soundEffects) {
+      playSound(() => soundManager.playError());
     }
   }
 
@@ -481,6 +585,26 @@ export default function GamePage({ params }) {
       const data = await res.json();
       if (res.ok) {
         console.log('✅ Move submitted successfully:', data.moveResult);
+
+        // Play appropriate sound effects if enabled
+        if (userPreferences.soundEffects) {
+          const moveResult = data.moveResult;
+
+          if (moveResult?.captured) {
+            playSound(() => soundManager.playCapture());
+          } else if (moveResult?.san?.includes('O-O')) {
+            playSound(() => soundManager.playCastling());
+          } else {
+            playSound(() => soundManager.playMove());
+          }
+
+          // Check for game state sounds
+          if (moveResult?.isCheckmate) {
+            setTimeout(() => playSound(() => soundManager.playCheckmate()), 200);
+          } else if (moveResult?.isCheck) {
+            setTimeout(() => playSound(() => soundManager.playCheck()), 200);
+          }
+        }
         setMove(''); // Clear the manual input field
 
         // Check if game was deleted (finished)
@@ -494,10 +618,20 @@ export default function GamePage({ params }) {
       } else {
         console.log('❌ Move submission failed:', data.error);
         setError(data.error);
+
+        // Play error sound if enabled
+        if (userPreferences.soundEffects) {
+          playSound(() => soundManager.playError());
+        }
       }
     } catch (error) {
       console.log('❌ Network error:', error);
       setError('Failed to submit move - network error');
+
+      // Play error sound if enabled
+      if (userPreferences.soundEffects) {
+        playSound(() => soundManager.playError());
+      }
     }
   }
 
@@ -664,7 +798,25 @@ export default function GamePage({ params }) {
 
       // Check if this is a pawn promotion move (pawn reaching last rank)
       if (isPawnPromotion(fromSquare, toSquare, fromPiece)) {
-        console.log('🎯 Pawn promotion detected, showing promotion modal');
+        console.log('🎯 Pawn promotion detected');
+
+        // Auto-promote to Queen if preference is enabled
+        if (userPreferences.autoQueen) {
+          console.log('♕ Auto-promoting to Queen');
+          setSelectedSquare(null);
+          setLegalMoves([]);
+          setError('');
+
+          // Play promotion sound if enabled
+          if (userPreferences.soundEffects) {
+            playSound(() => soundManager.playPromotion());
+          }
+
+          submitMove(fromSquare, toSquare, 'q');
+          return;
+        }
+
+        // Show promotion modal for manual selection
         console.log('Promotion details:', {
           fromSquare,
           toSquare,
@@ -681,7 +833,16 @@ export default function GamePage({ params }) {
 
       // Clear selection and errors immediately for responsive UI
       setSelectedSquare(null);
+      setLegalMoves([]);
       setError('');
+
+      // Check if move confirmation is enabled
+      if (userPreferences.confirmMoves) {
+        // Store the move for confirmation
+        setPendingMove({ from: fromSquare, to: toSquare });
+        setShowConfirmMoveModal(true);
+        return;
+      }
 
       // Submit the move with proper chess notation
       submitMove(fromSquare, toSquare);
@@ -701,6 +862,12 @@ export default function GamePage({ params }) {
           console.log('✅ Valid piece selection - matches current turn');
           setSelectedSquare({ row, col });
           setError(''); // Clear any previous errors
+
+          // Get legal moves for this piece
+          const fromSquare = `${String.fromCharCode(97 + col)}${8 - row}`;
+          const moves = getLegalMoves(fromSquare);
+          setLegalMoves(moves);
+          console.log('📍 Legal moves for', fromSquare, ':', moves);
         } else {
           console.log('❌ Blocked: Wrong piece for current turn');
           setError(`It's ${game.turn === 'w' ? 'White' : 'Black'}'s turn. You can only move ${game.turn === 'w' ? 'white' : 'black'} pieces.`);
@@ -770,13 +937,25 @@ export default function GamePage({ params }) {
           </div>
         </div>
         {/* Navigation */}
-        <div className="w-full mb-4">
+        <div className="w-full mb-4 flex gap-4">
           <button
             onClick={() => window.location.href = '/dashboard'}
             className="cursor-pointer bg-black border border-white/20 hover:border-yellow-400/50 text-white hover:text-yellow-400 px-8 py-4 rounded-2xl font-bold text-md transition-all duration-300 hover:scale-105 backdrop-blur-sm flex items-center space-x-2"
           >
             <span>←</span>
             <span>Return to Arena</span>
+          </button>
+          
+          {/* Sound Test Button (temporary for debugging) */}
+          <button
+            onClick={() => {
+              console.log('🧪 Testing sound system...');
+              soundManager.testSound();
+            }}
+            className="cursor-pointer bg-blue-600 border border-blue-400/50 hover:border-blue-300 text-white hover:text-blue-200 px-6 py-4 rounded-2xl font-bold text-sm transition-all duration-300 hover:scale-105 backdrop-blur-sm flex items-center space-x-2"
+          >
+            <span>🎵</span>
+            <span>Test Sound</span>
           </button>
         </div>
         {/* Game Layout - Simple 2x2 Grid */}
@@ -856,7 +1035,13 @@ export default function GamePage({ params }) {
             </div>
             {/* Chess Board */}
             <div className="flex flex-col justify-center mb-6 bg-black rounded-md">
-              <ChessBoard board={board} onSquareClick={handleSquareClick} />
+              <ChessBoard
+                board={board}
+                onSquareClick={handleSquareClick}
+                preferences={userPreferences}
+                selectedSquare={selectedSquare}
+                legalMoves={legalMoves}
+              />
 
               {/* Game Actions */}
               {game?.status === 'active' && game?.userRole === 'player' && (
@@ -1035,6 +1220,46 @@ export default function GamePage({ params }) {
         </div>
       )}
 
+      {/* Confirm Move Modal */}
+      {showConfirmMoveModal && pendingMove && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center z-50">
+          <div className="glass rounded-3xl p-8 max-w-md w-full mx-4 chess-shadow backdrop-blur-xl border border-white/20">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-xl">
+                <span className="text-2xl">✅</span>
+              </div>
+              <h2 className="text-3xl font-black text-white mb-4">Confirm Move</h2>
+              <p className="text-gray-300 mb-2 text-lg">
+                Move from <span className="font-bold text-yellow-400">{pendingMove.from}</span> to <span className="font-bold text-yellow-400">{pendingMove.to}</span>
+              </p>
+              <p className="text-gray-400 mb-6 text-sm">
+                Do you want to make this move?
+              </p>
+
+              <div className="flex space-x-4">
+                <button
+                  onClick={handleConfirmMove}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 px-6 rounded-2xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl transform active:scale-95"
+                >
+                  ✅ CONFIRM
+                </button>
+
+                <button
+                  onClick={handleCancelMove}
+                  className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 px-6 rounded-2xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl transform active:scale-95"
+                >
+                  ❌ CANCEL
+                </button>
+              </div>
+
+              <p className="text-gray-400 text-xs mt-4">
+                This setting can be changed in your profile preferences
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Resignation Confirmation Modal */}
       {showResignationModal && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center z-50">
@@ -1130,6 +1355,84 @@ export default function GamePage({ params }) {
               >
                 ✕
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Game End Modal */}
+      {showGameEndModal && gameResult && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center z-50">
+          <div className="glass rounded-3xl p-8 max-w-lg w-full mx-4 chess-shadow backdrop-blur-xl border border-white/20">
+            <div className="text-center">
+              {/* Icon based on game result */}
+              <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center shadow-2xl ${gameResult.isDraw 
+                ? 'bg-gradient-to-br from-yellow-400 to-yellow-600'
+                : gameResult.winner === 'White' 
+                  ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' 
+                  : 'bg-gradient-to-br from-gray-600 to-gray-800'
+                }`}>
+                {gameResult.isDraw ? (
+                  <span className="text-3xl">🤝</span>
+                ) : gameResult.winner === 'White' ? (
+                  <span className="text-3xl text-black">♔</span>
+                ) : (
+                  <span className="text-3xl text-white">♚</span>
+                )}
+              </div>
+
+              {/* Game Result Title */}
+              <h2 className="text-4xl font-black mb-4">
+                {gameResult.isDraw ? (
+                  <span className="text-yellow-400">DRAW</span>
+                ) : (
+                  <span className={gameResult.winner === 'White' ? 'text-yellow-400' : 'text-gray-300'}>
+                    {gameResult.winner?.toUpperCase()} WINS!
+                  </span>
+                )}
+              </h2>
+
+              {/* Reason */}
+              <div className="mb-6">
+                <p className="text-xl text-gray-300 mb-2">
+                  {gameResult.reason}
+                </p>
+                {!gameResult.isDraw && (
+                  <p className="text-lg font-semibold">
+                    <span className={gameResult.winner === 'White' ? 'text-yellow-400' : 'text-gray-300'}>
+                      {gameResult.winner} Champion
+                    </span>
+                    <span className="text-gray-400"> is victorious!</span>
+                  </p>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-4 justify-center">
+                <button
+                  onClick={() => {
+                    setShowGameEndModal(false);
+                    window.location.href = '/dashboard';
+                  }}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 px-8 rounded-2xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl transform active:scale-95"
+                >
+                  🏟️ BACK TO ARENA
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowGameEndModal(false);
+                    window.location.reload();
+                  }}
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 px-8 rounded-2xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl transform active:scale-95"
+                >
+                  🔄 REMATCH
+                </button>
+              </div>
+
+              <p className="text-gray-400 text-sm mt-6">
+                Great game! 🎉
+              </p>
             </div>
           </div>
         </div>

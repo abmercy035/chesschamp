@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useModal } from '../context/ModalContext';
+import { useModal } from '../context/ModalContext'	
 import Navigation from '../components/Navigation';
 import profileService, { CHESS_AVATARS } from '../../utils/profileService';
 
@@ -16,7 +16,6 @@ export default function ProfilePage({ params }) {
 	const [selectedAvatar, setSelectedAvatar] = useState('♔');
 	const [achievements, setAchievements] = useState([]);
 	const [isOwnProfile, setIsOwnProfile] = useState(true);
-	const [targetUsername, setTargetUsername] = useState(null);
 
 	useEffect(() => {
 		// Load profile on component mount
@@ -27,7 +26,6 @@ export default function ProfilePage({ params }) {
 
 				if (username) {
 					// Loading another user's profile
-					setTargetUsername(username);
 					setIsOwnProfile(false);
 					setEditMode(false); // Can't edit other users' profiles
 					userProfile = await profileService.getProfileByUsername(username);
@@ -126,8 +124,21 @@ export default function ProfilePage({ params }) {
 	// Handle the data structure - backend returns flattened profile data
 	const stats = profile.stats || {};
 	const ranking = profile.ranking || {};
-	const preferences = profile.preferences || {};
-	const profileAchievements = profile.achievements || {};
+	const preferences = {
+		// Game Preferences
+		boardStyle: 'classic',
+		pieceStyle: 'traditional',
+		showMoveDots: true,
+		theme: 'dark',
+		// Display Options
+		soundEffects: true,
+		showCoordinates: true,
+		highlightMoves: true,
+		autoQueen: false,
+		confirmMoves: false,
+		// Override with actual user preferences
+		...profile.preferences
+	};
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
@@ -598,19 +609,6 @@ export default function ProfilePage({ params }) {
 											<option value="traditional">Traditional</option>
 											<option value="modern">Modern</option>
 											<option value="minimalist">Minimalist</option>
-										</select>
-									</div>
-									<div>
-										<label className="block text-gray-300 text-sm mb-2">Animation Speed</label>
-										<select
-											value={preferences.animationSpeed}
-											onChange={(e) => handlePreferenceChange('animationSpeed', e.target.value)}
-											className="w-full bg-black/30 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-yellow-400"
-										>
-											<option value="slow">Slow</option>
-											<option value="normal">Normal</option>
-											<option value="fast">Fast</option>
-											<option value="instant">Instant</option>
 										</select>
 									</div>
 									<div>

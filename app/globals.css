@@ -235,3 +235,21 @@ body {
 		text-shadow: 0 0 20px var(--chess-gold), 0 0 30px var(--chess-gold), 0 0 40px rgba(212, 175, 55, 0.8);
 	}
 }
+
+@keyframes subtlePulse {
+
+	0%,
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+
+	50% {
+		transform: scale(1.02);
+		opacity: 0.9;
+	}
+}
+
+.animate-pulse-subtle {
+	animation: subtlePulse 3s ease-in-out infinite;
+}
